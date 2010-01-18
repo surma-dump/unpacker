@@ -1,0 +1,25 @@
+#!/bin/bash
+
+unpack_rar() {
+	FILENAME=${1}
+	shift
+
+	true
+	while [ $# -ne 0 ]; do
+		unrar e -p "${1}" "${FILENAME}"
+		if [ $? -eq 0 ] ; then
+			return 0
+		fi
+		shift
+	done
+	echo unpacker: unpack_rar: Could not unpack \"${FILENAME}\"
+}
+
+
+while read line; do
+	if [ "$(echo $line | grep -E '\.rar$' | wc -l)" -eq 1 ] ; then
+		unpack_rar "$line" "$@"
+	else
+		echo unpacker: unknown extension \"$line\"
+	fi
+done

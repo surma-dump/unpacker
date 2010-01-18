@@ -1,25 +1,35 @@
 #!/bin/bash
 
 unpack_rar() {
+	trap mkill INT TERM
 	FILENAME=${1}
+	echo File: \"${1}\"...
 	shift
 
 	true
 	while [ $# -ne 0 ]; do
-		unrar e -p "${1}" "${FILENAME}"
+		echo -n Trying \"${1}\"...
+		unrar e -p"${1}" "${FILENAME}" &>/dev/null
 		if [ $? -eq 0 ] ; then
+			echo " done!"
 			return 0
 		fi
+		echo " failed!"
 		shift
 	done
-	echo unpacker: unpack_rar: Could not unpack \"${FILENAME}\"
+	echo unpacker: unpack_rar: Could not unpack \"${FILENAME}\" >&2
 }
 
+mkill() {
+	exit ${1-1}
+}
+
+trap mkill INT TERM
 
 while read line; do
 	if [ "$(echo $line | grep -E '\.rar$' | wc -l)" -eq 1 ] ; then
 		unpack_rar "$line" "$@"
 	else
-		echo unpacker: unknown extension \"$line\"
+		echo unpacker: unknown extension \"$line\" >&2
 	fi
 done
